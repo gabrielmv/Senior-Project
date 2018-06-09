@@ -1,0 +1,9 @@
+Output: Component Cross Reference Report
+Type  : ReportComponents
+From  : Variant [[No Variations]] of Project [SensorProject.PrjPcb]
+
+
+Files Generated   : 0
+Documents Printed : 0
+
+Finished Output Generation At 8:06:44 PM On 08-Apr-18
