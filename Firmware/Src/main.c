@@ -69,16 +69,16 @@ UART_HandleTypeDef huart1;
 #define REGISTER_WRA	0x00
 #define REGISTER_WRB	0x01
 
-const int DEFAULT_POT1A = 194;
-const int DEFAULT_POT1B = 144;
-const int DEFAULT_POT2A = 194;
-const int DEFAULT_POT2B = 144;
-const int DEFAULT_POT3A = 194;
-const int DEFAULT_POT3B = 144;
-const int DEFAULT_POT4A = 194;
-const int DEFAULT_POT4B = 144;
+const int DEFAULT_POT1A = 192;//ok
+const int DEFAULT_POT1B = 0;
+const int DEFAULT_POT2A = 192;//3
+const int DEFAULT_POT2B = 0;
+const int DEFAULT_POT3A = 192;//4
+const int DEFAULT_POT3B = 0;
+const int DEFAULT_POT4A = 192;//2
+const int DEFAULT_POT4B = 0;
 
-//const float offset = (((float)(390 * 2.8) / 100000.00) / 0.0007);
+const float offset = (((float)(390 * 2.8) / 100000.00) / 0.0007);
 
 const int SENSOR_CHANNELS[] = {
 	ADC_CHANNEL_0,
@@ -433,19 +433,27 @@ void setup(){
 
 void loop(){
 	// read sensor
-	sensorReading0 = readSensors(0);
-	sensorReading1 = readSensors(1);
-	sensorReading2 = readSensors(2);
-	sensorReading3 = readSensors(3);
+	sensorReading0 = (4095 - readSensors(0) - 1023)*10;
+	sensorReading1 = (4095 - readSensors(1) - 1023)*36;
+	sensorReading2 = (4095 - readSensors(2) - 1023)*44;
+	sensorReading3 = (4095 - readSensors(3) - 1023)*6;
 
+	if(sensorReading0 < 0) sensorReading0 = 0;
+	if(sensorReading0 > 4095) sensorReading0 = 4095;
+	if(sensorReading1 < 0) sensorReading1 = 0;
+	if(sensorReading1 > 4095) sensorReading1 = 4095;
+	if(sensorReading2 < 0) sensorReading2 = 0;
+	if(sensorReading2 > 4095) sensorReading2 = 4095;
+	if(sensorReading3 < 0) sensorReading3 = 0;
+	if(sensorReading3 > 4095) sensorReading3 = 4095;
 
 	// transmit to bluetooth
 	bluetoothTransmit("{");
 	sprintf(buffer, "1:%d;",(int)sensorReading0);
 	bluetoothTransmit(buffer);
-	sprintf(buffer, "2:%d;",(int)sensorReading1);
+	sprintf(buffer, "2:%d;",(int)sensorReading2);
 	bluetoothTransmit(buffer);
-	sprintf(buffer, "3:%d;",(int)sensorReading2);
+	sprintf(buffer, "3:%d;",(int)sensorReading1);
 	bluetoothTransmit(buffer);
 	sprintf(buffer, "4:%d;",(int)sensorReading3);
 	bluetoothTransmit(buffer);
@@ -472,14 +480,14 @@ void initPotentiometer(void){
 	int pot4A = DEFAULT_POT4A;
 	int pot4B = DEFAULT_POT4B;
 
-	int data_POTA1[2]={REGISTER_WRA,(int)(pot1A)};
-	int data_POTB1[2]={REGISTER_WRB,(int)(pot1B)};
-	int data_POTA2[2]={REGISTER_WRA,(int)(pot2A)};
-	int data_POTB2[2]={REGISTER_WRB,(int)(pot2B)};
-	int data_POTA3[2]={REGISTER_WRA,(int)(pot3A)};
-	int data_POTB3[2]={REGISTER_WRB,(int)(pot3B)};
-	int data_POTA4[2]={REGISTER_WRA,(int)(pot4A)};
-	int data_POTB4[2]={REGISTER_WRB,(int)(pot4B)};
+	uint8_t data_POTA1[2]={REGISTER_WRA,(uint8_t)(pot1A)};
+	uint8_t data_POTB1[2]={REGISTER_WRB,(uint8_t)(pot1B)};
+	uint8_t data_POTA2[2]={REGISTER_WRA,(uint8_t)(pot2A)};
+	uint8_t data_POTB2[2]={REGISTER_WRB,(uint8_t)(pot2B)};
+	uint8_t data_POTA3[2]={REGISTER_WRA,(uint8_t)(pot3A)};
+	uint8_t data_POTB3[2]={REGISTER_WRB,(uint8_t)(pot3B)};
+	uint8_t data_POTA4[2]={REGISTER_WRA,(uint8_t)(pot4A)};
+	uint8_t data_POTB4[2]={REGISTER_WRB,(uint8_t)(pot4B)};
 
 	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS1_LEFT_UP,data_POTA1,2,1000);
 	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS1_LEFT_UP,data_POTB1,2,1000);
