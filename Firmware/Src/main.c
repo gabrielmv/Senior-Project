@@ -53,6 +53,50 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+// Constants
+// i2c simplification
+#define hi2c hi2c3
+
+///Slave Address for TPL0102 0
+#define SLAVE_ADDRESS1_LEFT_UP    0xA0
+///Slave Address for TPL0102 1
+#define SLAVE_ADDRESS2_LEFT_DOWN  0xA2
+///Slave Address for TPL0102 2
+#define SLAVE_ADDRESS3_RIGHT_UP   0xA4
+///Slave Address for TPL0102 3
+#define SLAVE_ADDRESS4_RIGHT_DOWN 0xA6
+
+#define REGISTER_WRA	0x00
+#define REGISTER_WRB	0x01
+
+const int DEFAULT_POT1A = 194;
+const int DEFAULT_POT1B = 144;
+const int DEFAULT_POT2A = 194;
+const int DEFAULT_POT2B = 144;
+const int DEFAULT_POT3A = 194;
+const int DEFAULT_POT3B = 144;
+const int DEFAULT_POT4A = 194;
+const int DEFAULT_POT4B = 144;
+
+//const float offset = (((float)(390 * 2.8) / 100000.00) / 0.0007);
+
+const int SENSOR_CHANNELS[] = {
+	ADC_CHANNEL_0,
+	ADC_CHANNEL_1,
+	ADC_CHANNEL_12,
+	ADC_CHANNEL_13
+};
+
+// Global scope
+
+// Sensor readings
+int sensorReading0;
+int sensorReading1;
+int sensorReading2;
+int sensorReading3;
+
+// buffer
+char buffer[20];
 
 /* USER CODE END PV */
 
@@ -65,11 +109,75 @@ static void MX_I2C3_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint32_t readADC(int adc_num);
-void USART1_Transmit(char *send);
-char *USART1_Receive();
+void setup();
+
+
+void loop();
+
+/******************************************************************************
+ * Function:      void initPotentiometer(void)
+ * Input:         void
+ * Output:        void
+ * Description:   set initial vallue for the potentiometers
+******************************************************************************/
+void initPotentiometer();
+
+/******************************************************************************
+ * Function:      void InitLeds(void)
+ * Input:         void
+ * Output:        void
+ * Description:   initial setting for the board LEDs
+******************************************************************************/
+void initLeds();
+
+/******************************************************************************
+ * Function:      void initiADCChannel(int channel)
+ * Input:         int channel
+ * Output:        void
+ * Description:   init ADC channel
+******************************************************************************/
+void initiADCChannel(int channel);
+
+/******************************************************************************
+ * Function:      int readADC (int channel)
+ * Input:         int channel
+ * Output:        int reading
+ * Description:   read indicated ADC Channel
+******************************************************************************/
+int readADC (int channel);
+
+/******************************************************************************
+ * Function:      int readSensors(int sensor)
+ * Input:         int sensor
+ * Output:        int reading
+ * Description:   read indicated ADC Channel
+ ******************************************************************************/
+int readSensors(int sensor);
+
+/******************************************************************************
+ * Function:      void bluetoothTransmit(char *send)
+ * Input:         char *send: string
+ * Output:        None
+ * Description:   Transmits the content from the string using the TX from
+ *                serial communication USART1
+ *****************************************************************************/
+void bluetoothTransmit(char *send);
+
+/******************************************************************************
+ * Function:      void delay_ms (int millis)
+ * Input:         int millis
+ * Output:        None
+ * Description:   Generate delay in milliseconds
+ *****************************************************************************/
 void delay_ms(int millis);
-void BT_command (char *cmd, int num_bytes_response);
+
+/******************************************************************************
+ * Function:      void SystemOn()
+ * Input:         void
+ * Output:        void
+ * Description:   Set the systemOn LED
+******************************************************************************/
+void SystemOn();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -84,6 +192,9 @@ void BT_command (char *cmd, int num_bytes_response);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	// Potentiometer parameters
+
+
 
   /* USER CODE END 1 */
 
@@ -109,40 +220,17 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t SensorReading;
-  char msg[20];
+  setup();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  loop();
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  USART1_Transmit("{");
-	  SensorReading = readADC(1);
-	  sprintf(msg, "1:%d;",(int)SensorReading);
-	  USART1_Transmit(msg);
-	  //delay_ms(100);
-
-	  SensorReading = readADC(2);
-	  sprintf(msg, "2:%d;",(int)SensorReading);
-	  USART1_Transmit(msg);
-	  //delay_ms(100);
-
-	  SensorReading = readADC(3);
-	  sprintf(msg, "3:%d;",(int)SensorReading);
-	  USART1_Transmit(msg);
-	  //delay_ms(100);
-
-	  SensorReading = readADC(4);
-	  sprintf(msg, "4:%d;",(int)SensorReading);
-	  USART1_Transmit(msg);
-	  USART1_Transmit("}\r\n");
-
-	  delay_ms(1000);
 
   }
   /* USER CODE END 3 */
@@ -334,135 +422,122 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void setup(){
+	// Initiate the potentiometers
+	initPotentiometer();
+	// Initiate LEDs
+	initLeds();
+	// set the SystemOn LED
+	SystemOn();
+}
+
+void loop(){
+	// read sensor
+	sensorReading0 = readSensors(0);
+	sensorReading1 = readSensors(1);
+	sensorReading2 = readSensors(2);
+	sensorReading3 = readSensors(3);
+
+
+	// transmit to bluetooth
+	bluetoothTransmit("{");
+	sprintf(buffer, "1:%d;",(int)sensorReading0);
+	bluetoothTransmit(buffer);
+	sprintf(buffer, "2:%d;",(int)sensorReading1);
+	bluetoothTransmit(buffer);
+	sprintf(buffer, "3:%d;",(int)sensorReading2);
+	bluetoothTransmit(buffer);
+	sprintf(buffer, "4:%d;",(int)sensorReading3);
+	bluetoothTransmit(buffer);
+	bluetoothTransmit("}");
+
+	// wait for next reading
+	delay_ms(500);
+}
+
 /******************************************************************************
- * Function:      void USART1_Transmit(char *send)
- * Input:         char *send: string
- * Output:        None
- * Description:   Transmits the content from the string using the TX from
- *                serial communication USART1
- *****************************************************************************/
-void USART1_Transmit(char *send){
+ * Function:      void initPotentiometer(void)
+ * Input:         void
+ * Output:        void
+ * Description:   set initial vallue for the potentiometers
+******************************************************************************/
+void initPotentiometer(void){
+
+	int pot1A = DEFAULT_POT1A;
+	int pot1B = DEFAULT_POT1B;
+	int pot2A = DEFAULT_POT2A;
+	int pot2B = DEFAULT_POT2B;
+	int pot3A = DEFAULT_POT3A;
+	int pot3B = DEFAULT_POT3B;
+	int pot4A = DEFAULT_POT4A;
+	int pot4B = DEFAULT_POT4B;
+
+	int data_POTA1[2]={REGISTER_WRA,(int)(pot1A)};
+	int data_POTB1[2]={REGISTER_WRB,(int)(pot1B)};
+	int data_POTA2[2]={REGISTER_WRA,(int)(pot2A)};
+	int data_POTB2[2]={REGISTER_WRB,(int)(pot2B)};
+	int data_POTA3[2]={REGISTER_WRA,(int)(pot3A)};
+	int data_POTB3[2]={REGISTER_WRB,(int)(pot3B)};
+	int data_POTA4[2]={REGISTER_WRA,(int)(pot4A)};
+	int data_POTB4[2]={REGISTER_WRB,(int)(pot4B)};
+
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS1_LEFT_UP,data_POTA1,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS1_LEFT_UP,data_POTB1,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS2_LEFT_DOWN,data_POTA2,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS2_LEFT_DOWN,data_POTB2,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS3_RIGHT_UP,data_POTA3,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS3_RIGHT_UP,data_POTB3,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS4_RIGHT_DOWN,data_POTA4,2,1000);
+	HAL_I2C_Master_Transmit(&hi2c,SLAVE_ADDRESS4_RIGHT_DOWN,data_POTB4,2,1000);
+}
+
+void initLeds(void){
+	HAL_GPIO_WritePin(SystemOn_GPIO_Port,SystemOn_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(BatteryLow_GPIO_Port,BatteryLow_Pin,GPIO_PIN_SET);
+}
+
+void initiADCChannel(int channel){
+  ADC_ChannelConfTypeDef sConfig;
+
+  sConfig.Channel = channel;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+	_Error_Handler(__FILE__, __LINE__);
+  }
+}
+
+int readADC (int channel){
+	uint32_t val=0;
+	initiADCChannel(channel);
+	if(HAL_ADC_GetState (&hadc1) != HAL_ADC_STATE_BUSY)
+	{
+		HAL_ADC_ConfigChannel(&hadc1,channel);
+		HAL_ADC_Start(&hadc1);
+		HAL_ADC_PollForConversion(&hadc1,100);
+		val=HAL_ADC_GetValue(&hadc1);
+		HAL_ADC_Stop(&hadc1);
+	}
+	return val;
+}
+
+int readSensors(int sensor){
+	return  readADC(SENSOR_CHANNELS[sensor]);
+}
+
+void bluetoothTransmit(char *send){
 	HAL_UART_Transmit(&huart1, (uint8_t*)send, (unsigned)strlen(send),100);
 }
 
-/******************************************************************************
- * Function:      void USART1_Receive(char *send)
- * Input:         char *receive: string
- * Output:        None
- * Description:   Receive a character using the RX from the serial
- *                communication USART1
- *****************************************************************************/
-char *USART1_Receive(){
-	char *receive;
-	HAL_UART_Receive(&huart1, (uint8_t*)receive, 1,100);
-	return *receive;
-}
-
-/******************************************************************************
- * Function:      void delay_ms (int millis)
- * Input:         int millis
- * Output:        None
- * Description:   Generate delay in milliseconds
- *****************************************************************************/
 void delay_ms(int millis){
 	HAL_Delay(millis);
 }
 
-/******************************************************************************
- * Function:      void BT_command (char *cmd, int num_bytes_response)
- * Input:         char *cmd
- *                int num_bytes_response
- * Output:        None
- * Description:   Sends an AT command to Bluetooth using Serial and gets a
- *                response
- *****************************************************************************/
-void BT_command (char *cmd, int num_bytes_response){
-	delay_ms(1000);
-	USART1_Transmit(*cmd);
-	delay_ms(1000);
-	for(int i = 0; i < num_bytes_response; i++){
-		USART2_Transmit(USART1_Receive());
-	}
+void SystemOn(void){
+	HAL_GPIO_WritePin(SystemOn_GPIO_Port,SystemOn_Pin,GPIO_PIN_RESET);
 }
-
-/******************************************************************************
- * Function:      uint32_t readADC(int adc_num)
- * Input:         int adc_num
- * Output:        uint32_t ADC reading
- * Description:   Selected Read ADC
- *****************************************************************************/
-uint32_t readADC(int adc_num){
-	ADC_ChannelConfTypeDef sConfig;
-	uint32_t reading = 0;
-	switch(adc_num){
-	case 1:
-		if(HAL_ADC_GetState(&hadc1) != HAL_ADC_STATE_REG_BUSY){
-
-			sConfig.Channel = ADC_CHANNEL_0;
-			sConfig.Rank = 1;
-			sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-			if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK){
-				_Error_Handler(__FILE__, __LINE__);
-			}
-
-			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1,100);
-			reading = HAL_ADC_GetValue(&hadc1);
-			HAL_ADC_Stop(&hadc1);
-		}
-		break;
-	case 2:
-		if(HAL_ADC_GetState(&hadc1) != HAL_ADC_STATE_REG_BUSY){
-
-			sConfig.Channel = ADC_CHANNEL_1;
-			sConfig.Rank = 1;
-			sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-			if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK){
-				_Error_Handler(__FILE__, __LINE__);
-			}
-
-			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1,100);
-			reading = HAL_ADC_GetValue(&hadc1);
-			HAL_ADC_Stop(&hadc1);
-		}
-		break;
-	case 3:
-		if(HAL_ADC_GetState(&hadc1) != HAL_ADC_STATE_REG_BUSY){
-
-			sConfig.Channel = ADC_CHANNEL_13;
-			sConfig.Rank = 1;
-			sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-			if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK){
-				_Error_Handler(__FILE__, __LINE__);
-			}
-
-			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1,100);
-			reading = HAL_ADC_GetValue(&hadc1);
-			HAL_ADC_Stop(&hadc1);
-		}
-		break;
-	case 4:
-		if(HAL_ADC_GetState(&hadc1) != HAL_ADC_STATE_REG_BUSY){
-
-			sConfig.Channel = ADC_CHANNEL_12;
-			sConfig.Rank = 1;
-			sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-			if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK){
-				_Error_Handler(__FILE__, __LINE__);
-			}
-
-			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1,100);
-			reading = HAL_ADC_GetValue(&hadc1);
-			HAL_ADC_Stop(&hadc1);
-		}
-		break;
-	}
-	return reading;
-}
-
 /* USER CODE END 4 */
 
 /**

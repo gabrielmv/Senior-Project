@@ -45,8 +45,8 @@ clean:
 	-@echo ' '
 
 post-build:
-	-@echo 'Generating binary and Printing size information:'
-	arm-none-eabi-objcopy -O binary "TCC.elf" "TCC.bin"
+	-@echo 'Generating hex and Printing size information:'
+	arm-none-eabi-objcopy -O ihex "TCC.elf" "TCC.hex"
 	arm-none-eabi-size "TCC.elf"
 	-@echo ' '
 
