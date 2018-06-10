@@ -10,7 +10,8 @@ public class Preferences{
         this.high = "75";
         this.stepMax = "2000";
         this.phoneNumber = "31991949309";
-
+        this.time = "10";
+        this.stepsInterval = "20";
     }
 
     private static Preferences instance;
@@ -20,6 +21,8 @@ public class Preferences{
     private String high;
     private String stepMax;
     private String phoneNumber;
+    private String time;
+    private String stepsInterval;
 
 
     public String getLow() {
@@ -42,6 +45,14 @@ public class Preferences{
         return phoneNumber;
     }
 
+    public String getTime() {
+        return time;
+    }
+
+    public String getStepsInterval() {
+        return stepsInterval;
+    }
+
     public void setLow(String s){
         this.low = s;
     }
@@ -60,6 +71,14 @@ public class Preferences{
 
     public void setphoneNumber(String s){
         this.phoneNumber = s;
+    }
+
+    public void setTime(String s){
+        this.time = s;
+    }
+
+    public void setStepsInterval(String s){
+        this.stepsInterval = s;
     }
 
     public static synchronized Preferences getInstance(){

@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="Low"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_limits" />
@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="Medium"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_low" />
@@ -64,7 +64,7 @@
         android:layout_width="52dp"
         android:layout_height="36dp"
         android:layout_marginStart="92dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="numberDecimal"
         android:text="25"
@@ -77,7 +77,7 @@
         android:layout_width="52dp"
         android:layout_height="38dp"
         android:layout_marginStart="92dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="42dp"
         android:ems="10"
         android:inputType="numberDecimal"
         android:text="50"
@@ -90,7 +90,7 @@
         android:layout_width="53dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="92dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="68dp"
         android:ems="10"
         android:inputType="numberDecimal"
         android:text="75"
@@ -113,7 +113,7 @@
         android:layout_width="53dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="92dp"
-        android:layout_marginTop="108dp"
+        android:layout_marginTop="110dp"
         android:ems="10"
         android:inputType="number"
         android:text="2000"
@@ -126,7 +126,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="192dp"
+        android:layout_marginTop="180dp"
         android:text="Message Number"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -141,5 +141,47 @@
         android:text="Update"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_timeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Time between Notifications (s)"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_phone" />
+
+    <EditText
+        android:id="@+id/et_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:ems="10"
+        android:inputType="number"
+        android:text="10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_timeTitle" />
+
+    <EditText
+        android:id="@+id/et_stepsInterval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:ems="10"
+        android:inputType="number"
+        android:text="20"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_stepsInterval" />
+
+    <TextView
+        android:id="@+id/tv_stepsInterval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Steps between Notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_time" />
 
 </android.support.constraint.ConstraintLayout>
