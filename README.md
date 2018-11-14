@@ -1,4 +1,4 @@
-# TCC
+# Senior Project
 Gabriel's Senior Project
 
 Diabetes Foot Ulcer Tracker
